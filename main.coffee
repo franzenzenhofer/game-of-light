@@ -14,7 +14,8 @@ MAX_USER_SPEED = 4
 
 #DEFAULT_LINE_WIDTH = 2
 #DEFAULT_POSITIVE_CIRCLE_JOIN_RATE = 0.5
-#DEFAULT_NEGATIVE_CIRCLE_JOIN_RATE = 1
+DEFAULT_NEGATIVE_CIRCLE_JOIN_RATE = 0.5
+RATIO_PREVAILANCE_WITH_MERGE = 0.8
 
 MINIMAL_VIABLE_RADIUS = 1
 MAX_ENEMY_RADIUS = 450
@@ -23,6 +24,8 @@ PROPORTION_MAX_NEW_ENEMY_SIZE = 12.0
 
 BULLET_SHOOTER_RATIO = 0.2
 SHOOTER_SHOOT_LOSS = 0.01
+
+DRAW_BIGGER_RADIUS_FACTOR = 1.4
 
 
 dlog = (msg) ->
@@ -42,12 +45,15 @@ randomPlusOrMinusOne = () ->
   else
     return 1
 
-clamp = (min, max) -> Math.min(Math.max(this, min), max)
+clamp = (v, min, max) -> Math.min(Math.max(v, min), max)
+
+clampRgb = (v) -> 
+  parseInt(clamp(v,0,255))
 
 zeroTo255 = (n) ->
   until n? then return randomInt(0,255)
   if n <0 or n>255 then return randomInt(0,255)
-  return n
+  return parseInt(n)
 
 randomColor = (r,g,b) ->
   return [zeroTo255(r),zeroTo255(g),zeroTo255(b)]
@@ -148,7 +154,9 @@ makeBubble = (x = 100, y = 100, r = 100, vx = 0, vy = 0, rgb) ->
   b = {}
   b.circle = c(x,y,r)
   b.fillColor = rgb ? randomColor()
+  b.strokeColor = [0,0,255]
   b.alive = true
+  b.explode = false
   b.vx = vx
   b.vy = vy
   return b
@@ -195,6 +203,126 @@ spawnEnemy = (world_width, world_height, min_r = 15, max_r = 75, min_v = MIN_ENE
       vx = vx * -1
   makeEnemy(x, y, r, vx, vy)
 
+#collison detection
+rectangleCollision = (a,b) -> 
+  [a_x, a_y, a_width] = a
+  [b_x, b_y, b_width] = b
+  a_x < b_x + b_width &&
+  a_x + a_width > b_x &&
+  a_y < b_y + b_width &&
+  a_y + a_width > b_y
+
+circleCollision = (c1, c2) ->
+  [c1_x, c1_y, c1_r] = rc(c1)
+  [c2_x, c2_y, c2_r] = rc(c2)
+  a = c2_x - c1_x
+  b = c2_y - c1_y
+  d = Math.sqrt(a*a + b*b)
+  if (d - c1_r - c2_r) < 0
+    return true
+  return false
+
+bubbleCollision = (b1, b2) ->
+  [c1_x, c1_y, c1_r] = rc(b1.circle)
+  [c2_x, c2_y, c2_r] = rc(b2.circle)
+  if rectangleCollision([c1_x-(c1_r/2),c1_y-(c1_y/2), c1_r*2],[c2_x-(c2_r/2),c2_y-(c2_y/2), c2_r*2])
+    #b1.strokeColor=[255,128,0]
+    #b2.strokeColor=[255,128,0]
+    return circleCollision(b1.circle,b2.circle)
+  return false
+
+getA = (circle) ->
+  return circle[2]*circle[2]*Math.PI
+
+getADifference = (c1, c2) ->
+  return Math.abs(getA(c1)-getA(c2))
+
+getRadiusByArea = (a) ->
+  return Math.sqrt(a/Math.PI)
+
+getADifferenceMinusRadius = (circle, minus) ->
+  c2 = [circle[0], circle[1], circle[2]-minus]
+  getADifference(circle, c2)
+
+colorMix = (rgb1, rgb2, percentage) ->
+    [r1, g1, b1] = rgb1
+    [r2, g2, b2] = rgb2
+
+    if r1+g1+b1 > 255
+      r_faktor = 1; if r1 < r2 then r_faktor = r_faktor*-1
+      g_faktor = 1; if g1 < g2 then g_faktor = g_faktor*-1 
+      b_faktor = 1; if b1 < b2 then b_faktor = b_faktor*-1
+    else
+      #return [255,255,255]
+      r_faktor = g_faktor = b_faktor = 1
+
+
+    r_diff = Math.abs(r1-r2)
+    g_diff = Math.abs(g1-g2)
+    b_diff = Math.abs(b1-b2)
+
+    r_n = clampRgb(r1+(r_diff*percentage*r_faktor))
+    g_n = clampRgb(g1+(g_diff*percentage*g_faktor))
+    b_n = clampRgb(b1+(b_diff*percentage*b_faktor))
+    return [r_n, g_n, b_n]
+
+    #r_diff = r1 - r2
+    #g_diff = g1 - g2
+    #b_diff = b1 - b2
+
+    #r_new = r1 + r_diff * percentage
+    #g_new = g1 + g_diff * percentage
+    #b_new = b1 + b_diff * percentage
+    #r_new = clampRgb(r1+(r_diff))
+    #g_new = clampRgb(g1+(g_diff))
+    #b_new = clampRgb(b1+(b_diff))
+    #dlog(percentage)
+    #dlog(rgb1)
+    #dlog(rgb2)
+    #dlog([r_new, g_new, b_new])
+    #dlog('---')
+    #debugger;
+    #return [r_new, g_new, b_new]
+    dlog(r1+'-'+r2+'='+r_diff+'+'+r1+(''))
+    return [r_new,g_new,b_new]
+
+
+joinBubbles = (b1, b2) ->
+  [c1_x, c1_y, c1_r] = rc(b1.circle)
+  [c2_x, c2_y, c2_r] = rc(b2.circle)
+  if c1_r > c2_r
+    winner = b1
+    looser = b2
+  else if c1_r < c2_r
+    winner = b2
+    looser = b1
+  else
+    if Math.random() <= 0.5
+      b1.explode = true
+      b1.alive = false
+    else
+      b2.explode = true
+      b2.alive = false
+    return true
+
+  winner.strokeColor = [0,255,0]
+  looser.strokeColor = [255,0,0]
+
+  if (winner and looser)
+    looser_area_difference = getADifferenceMinusRadius(looser.circle, DEFAULT_NEGATIVE_CIRCLE_JOIN_RATE)
+    looser.circle[2] = looser.circle[2] - DEFAULT_NEGATIVE_CIRCLE_JOIN_RATE
+    winner_area = getA(winner.circle)
+    percentage_of_area = looser_area_difference / winner_area
+    winner.fillColor = colorMix(winner.fillColor, looser.fillColor, percentage_of_area)
+    #winner.fillColor = colorMix(winner.fillColor, looser.fillColor, percentage_of_area)
+    winner.circle[2] = getRadiusByArea(winner_area+(looser_area_difference*RATIO_PREVAILANCE_WITH_MERGE))
+    
+    if looser.circle[2] < MINIMAL_VIABLE_RADIUS
+      looser.alive = false
+  
+  return true
+
+
 
 
 
@@ -202,21 +330,23 @@ spawnEnemy = (world_width, world_height, min_r = 15, max_r = 75, min_v = MIN_ENE
 drawCircleBox = (circle, ctx) ->
 
 
-drawCircle = (ctx, circle, fill = randomColor(), border = randomColor()) ->
+drawCircle = (ctx, circle, fill = randomColor(), border = [0,0,255]) ->
   [x,y,r]=rc(circle)
+  if r <= 0 then return false
   ctx.globalCompositeOperation = "lighter"
   ctx.lineWidth = 2
   #ctx.fillStyle = makeColorString(fill)
-  gradient = ctx.createRadialGradient(x, y, 0, x, y, r)
+  gradient = ctx.createRadialGradient(x, y, 0, x, y, r*DRAW_BIGGER_RADIUS_FACTOR)
   #gradient.addColorStop(0, "white")
   #gradient.addColorStop(0.4, "white")
   gradient.addColorStop(0.4, makeColorString(fill))
   gradient.addColorStop(1, "black")
   ctx.fillStyle = gradient
-  ctx.strokeStyle = makeColorString(border)
+  #ctx.strokeStyle = makeColorString(border)
+  #ctx.strokeStyle = makeColorString(border)
   ctx.beginPath()
   #ctx.arc(x,y,r,0,2*Math.PI)
-  ctx.arc(((0.5 + x) | 0),((0.5 + y) | 0),((0.5 + r) | 0), 0,2*Math.PI)
+  ctx.arc(((0.5 + x) | 0),((0.5 + y) | 0),((0.5 + r*DRAW_BIGGER_RADIUS_FACTOR) | 0), 0,2*Math.PI)
   #ctx.arc((~~(0.5 + x)),(~~(0.5 + y)),(~~(0.5 + r)), 0,2*Math.PI)
   #.arc((Math.round(x)),(Math.round(y)),(Math.round(r)), 0,2*Math.PI)
   ctx.fill()
@@ -288,6 +418,7 @@ init = (w) ->
       if enemies.length < max_nr_of_enemies and Math.random() < chance_of_new_enemy
         enemies.push(spawnEnemy(world_width, world_height, MIN_ENEMY_RADIUS, maxEnemySize(players[0]), MIN_ENEMY_SPEED, maxEnemyVelocity(players[0])))
 
+
       #move
       for e in enemies
         do (e) ->
@@ -302,8 +433,25 @@ init = (w) ->
       #dlog(enemies)
       #debugger;
 
+      players_and_enemies = players.concat(enemies)
 
-      all_bubbles = players.concat(enemies)
+      #check if the bubbles collide
+      for b, i in players_and_enemies
+        for b2, i2 in players_and_enemies
+          #if i isnt i2 and bubbleCollision(b,b2)
+          if i isnt i2 and circleCollision(b.circle, b2.circle)
+            joinBubbles(b,b2)
+      #push into explosion and iterrate explosion, get rid of explosions
+
+      #get rid of not alive ones
+      temp = []
+      for b in players_and_enemies
+        if b.alive isnt false
+          temp.push(b)
+
+      players_and_enemies = temp
+
+      all_bubbles = players_and_enemies
       #return players
       #return enemies
       return all_bubbles
@@ -317,7 +465,7 @@ init = (w) ->
       #cctx.beginPath()
 
       for b in bubbles 
-        drawCircle(cctx, b.circle, b.fillColor, [0,0,0])
+        drawCircle(cctx, b.circle, b.fillColor, b.strokeColor)
 
 
       #final step, draw the cache over to the world
