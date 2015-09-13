@@ -495,7 +495,7 @@ init = (w = document.getElementById('world'), full_screen = FULL_SCREEN) ->
     world_height = w.height
 
     wctx = w.getContext('2d')
-    cache_canvas = w #document.createElement('canvas')
+    cache_canvas = document.createElement('canvas')
     cache_canvas.width = world_width
     cache_canvas.height = world_height
     cctx = cache_canvas.getContext('2d')
@@ -688,7 +688,7 @@ init = (w = document.getElementById('world'), full_screen = FULL_SCREEN) ->
 
 
       #final step, draw the cache over to the world
-      #wctx.drawImage(cache_canvas,0,0)
+      wctx.drawImage(cache_canvas,0,0)
 
     run = () ->
       window.stats.begin()

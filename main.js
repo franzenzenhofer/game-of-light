@@ -608,7 +608,7 @@
       world_width = w.width;
       world_height = w.height;
       wctx = w.getContext('2d');
-      cache_canvas = w;
+      cache_canvas = document.createElement('canvas');
       cache_canvas.width = world_width;
       cache_canvas.height = world_height;
       cctx = cache_canvas.getContext('2d');
@@ -794,16 +794,15 @@
         return [continue_game, all_bubbles];
       };
       draw = function(bubbles) {
-        var b, j, len, results;
+        var b, j, len;
         cctx.clearRect(0, 0, world_width, world_height);
         cctx.fillStyle = "rgba(0, 0, 0, 0.3)";
         cctx.fillRect(0, 0, world_width, world_height);
-        results = [];
         for (j = 0, len = bubbles.length; j < len; j++) {
           b = bubbles[j];
-          results.push(drawCircle(cctx, b.circle, b.fillColor, b.strokeColor, b.opacity));
+          drawCircle(cctx, b.circle, b.fillColor, b.strokeColor, b.opacity);
         }
-        return results;
+        return wctx.drawImage(cache_canvas, 0, 0);
       };
       run = function() {
         var bubbles, continue_game, ref;
