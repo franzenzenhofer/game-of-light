@@ -715,8 +715,8 @@
               y_factor = (1 * ((d - 90) / 90)) - 2;
               x_factor = (1 * Math.abs((d - 90) / 90)) - 2;
             }
-            dlog('x_factor:' + x_factor, true);
-            dlog('y_factor:' + y_factor, true);
+            dlog('x_factor:' + x_factor);
+            dlog('y_factor:' + y_factor);
             p.vx = limitPlayerVelocity((1 * command.force * 1) * x_factor);
             return p.vy = limitPlayerVelocity((1 * command.force * 1) * y_factor);
           }
