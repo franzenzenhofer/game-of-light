@@ -249,7 +249,7 @@
   };
 
   spawnPlayer = function(w, h) {
-    return makePlayer(Math.floor(w / 2), Math.floor(h / 2), w * 0.010);
+    return makePlayer(Math.floor(w / 2), Math.floor(h / 2), PLAYER_START_SIZE);
   };
 
   makeBullet = function(x, y, r, vx, vy, rgb) {

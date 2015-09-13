@@ -191,7 +191,7 @@ makePlayer = (x,y,r) ->
 
 spawnPlayer = (w,h) ->
   #PLAYER_START_SIZE ignored
-  makePlayer(Math.floor(w/2), Math.floor(h/2), w*0.010)
+  makePlayer(Math.floor(w/2), Math.floor(h/2), PLAYER_START_SIZE) #w*0.010)
 
 makeBullet = (x,y,r,vx,vy,rgb) ->
   makeBubble(x, y, r, vx, vy, rgb)
