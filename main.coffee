@@ -39,8 +39,8 @@ FULL_SCREEN = false
 
 
 
-dlog = (msg) ->
-  console.log(msg) if _DEBUG_
+dlog = (msg, debug = _DEBUG_) ->
+  console.log(msg) if debug
   return msg
 
 delay = (ms, func) -> setTimeout(func, ms)
@@ -592,17 +592,17 @@ init = (w = document.getElementById('world'), full_screen = FULL_SCREEN) ->
               y_factor = -1 * ((d-90) / 90)
               x_factor = -1 * Math.abs((d - 90)/90)
             else if d > 180 and d <= 270
-              y_factor = 1 * ((d-90) / 90)
-              x_factor = -1 * Math.abs((d - 90)/90)
+              y_factor = (1 * ((d-90) / 90))-1
+              x_factor = (-1 * Math.abs((d - 90)/90))-1
             else if d > 270
-              y_factor = 1 * ((d-90) / 90)
-              x_factor = 1 * Math.abs((d - 90)/90)
+              y_factor = (1 * ((d-90) / 90))-2
+              x_factor = (1 * Math.abs((d - 90)/90))-2
 
 
-            #dlog('x_factor:'+x_factor)
-            dlog('y_factor:'+y_factor)
-            p.vx = limitPlayerVelocity((MAX_USER_SPEED * command.force * 1)*x_factor)# * (command.angle.degree360%350)
-            p.vy = limitPlayerVelocity((MAX_USER_SPEED * command.force * 1)*y_factor)
+            dlog('x_factor:'+x_factor, true)
+            dlog('y_factor:'+y_factor, true)
+            p.vx = limitPlayerVelocity((1 * command.force * 1)*x_factor)# * (command.angle.degree360%350)
+            p.vy = limitPlayerVelocity((1 * command.force * 1)*y_factor)
 
       moveBubbleWithinBounds(w,h,p)
 

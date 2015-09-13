@@ -46,8 +46,11 @@
 
   FULL_SCREEN = false;
 
-  dlog = function(msg) {
-    if (_DEBUG_) {
+  dlog = function(msg, debug) {
+    if (debug == null) {
+      debug = _DEBUG_;
+    }
+    if (debug) {
       console.log(msg);
     }
     return msg;
@@ -706,15 +709,16 @@
               y_factor = -1 * ((d - 90) / 90);
               x_factor = -1 * Math.abs((d - 90) / 90);
             } else if (d > 180 && d <= 270) {
-              y_factor = 1 * ((d - 90) / 90);
-              x_factor = -1 * Math.abs((d - 90) / 90);
+              y_factor = (1 * ((d - 90) / 90)) - 1;
+              x_factor = (-1 * Math.abs((d - 90) / 90)) - 1;
             } else if (d > 270) {
-              y_factor = 1 * ((d - 90) / 90);
-              x_factor = 1 * Math.abs((d - 90) / 90);
+              y_factor = (1 * ((d - 90) / 90)) - 2;
+              x_factor = (1 * Math.abs((d - 90) / 90)) - 2;
             }
-            dlog('y_factor:' + y_factor);
-            p.vx = limitPlayerVelocity((MAX_USER_SPEED * command.force * 1) * x_factor);
-            return p.vy = limitPlayerVelocity((MAX_USER_SPEED * command.force * 1) * y_factor);
+            dlog('x_factor:' + x_factor, true);
+            dlog('y_factor:' + y_factor, true);
+            p.vx = limitPlayerVelocity((1 * command.force * 1) * x_factor);
+            return p.vy = limitPlayerVelocity((1 * command.force * 1) * y_factor);
           }
         };
         for (j = 0, len = active_commands.length; j < len; j++) {
