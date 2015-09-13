@@ -544,32 +544,41 @@
     };
     joystick = nipplejs.create();
     joystick.on('move', function(evt, data) {
-      var command, fake_event, ref;
       dlog(data);
-      setActiveCommand(data);
-      return true;
       if (data.force < 1) {
         removeAllActiveCommand();
-        return setActiveCommand('slowdown');
+        setActiveCommand('slowdown');
       } else {
-        command = data != null ? (ref = data.direction) != null ? ref.angle : void 0 : void 0;
-        dlog('!!!!' + command);
-        fake_event = {};
-        removeAllActiveCommand();
-        if (command === 'up') {
-          fake_event.keyCode = 38;
-          return keydown(fake_event);
-        } else if (command === 'down') {
-          fake_event.keyCode = 40;
-          return keydown(fake_event);
-        } else if (command === 'left') {
-          fake_event.keyCode = 37;
-          return keydown(fake_event);
-        } else if (command === 'right') {
-          fake_event.keyCode = 39;
-          return keydown(fake_event);
-        }
+        setActiveCommand(data);
       }
+      return true;
+
+      /*
+      else
+        command = data?.direction?.angle
+        dlog('!!!!'+command)
+        fake_event = {}
+        removeAllActiveCommand()
+        #if event.keyCode is 38 then return 'up'
+        if command is 'up'
+          #dlog('touch up')
+          fake_event.keyCode = 38
+          keydown(fake_event)
+        #if event.keyCode is 40 then return 'down'
+        else if command is 'down'
+          #dlog('touch down')
+          fake_event.keyCode = 40
+          keydown(fake_event)
+        #if event.keyCode is 37 then return 'left'
+        else if command is 'left'
+          fake_event.keyCode = 37
+          keydown(fake_event)
+        #if event.keyCode is 39 then return 'right'
+        else if command is 'right'
+          fake_event.keyCode = 39
+          keydown(fake_event)
+        #if event.keyCode is 32 then return 'fire'
+       */
     });
     joystick.on('end', function(evt, data) {
       return removeAllActiveCommand();

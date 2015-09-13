@@ -429,11 +429,13 @@ init = (w = document.getElementById('world'), full_screen = FULL_SCREEN) ->
   joystick.on('move', (evt, data) ->
     ##dlog(evt)
     dlog(data)
-    setActiveCommand(data)
-    return true
     if data.force < 1
       removeAllActiveCommand()
       setActiveCommand('slowdown')
+    else
+      setActiveCommand(data)
+    return true
+    ###
     else
       command = data?.direction?.angle
       dlog('!!!!'+command)
@@ -458,6 +460,7 @@ init = (w = document.getElementById('world'), full_screen = FULL_SCREEN) ->
         fake_event.keyCode = 39
         keydown(fake_event)
       #if event.keyCode is 32 then return 'fire'
+    ###
   )
 
   joystick.on('end', (evt, data) ->
