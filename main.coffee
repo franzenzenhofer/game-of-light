@@ -1,5 +1,5 @@
 
-_DEBUG_ = true
+_DEBUG_ = false
 
 #magic numbers
 ENEMIES_PROPABILITY = 0.05

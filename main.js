@@ -2,7 +2,7 @@
 (function() {
   var BULLET_SHOOTER_RATIO, DEFAULT_NEGATIVE_CIRCLE_JOIN_RATE, DEFAULT_USER_ACCELERATION, DRAW_BIGGER_RADIUS_FACTOR, ENEMIES_PROPABILITY, FULL_SCREEN, MAX_ENEMY_RADIUS, MAX_ENEMY_SPEED, MAX_RADIUS, MAX_USER_SPEED, MINIMAL_VIABLE_RADIUS, MIN_ENEMY_RADIUS, MIN_ENEMY_SPEED, NUMBER_OF_ENEMIES, PLAYER_START_SIZE, PROPORTION_MAX_NEW_ENEMY_SIZE, RATIO_PREVAILANCE_WITH_MERGE, SHOOTER_SHOOT_LOSS, _DEBUG_, _NODE_WEBKIT_CONTEXT_, bubbleCollision, c, calcCircleBox, circle, circleCollision, clamp, clampRgb, colorMix, colorMixHsl, colorMixRgbLikeHsv, delay, dlog, drawCircle, drawCircleBox, drawCircleExplosion, event2Command, getA, getADifference, getADifferenceMinusRadius, getRadiusByArea, getRidOfTheDeadAndReturnTheLiving, init, isCircleRadiusViable, limitPlayerVelocity, makeBubble, makeBullet, makeColorString, makeEnemy, makeHslColorString, makePlayer, maxEnemySize, maxEnemyVelocity, moveBubble, moveBubbleWithinBounds, randomColor, randomColorHsl, randomInt, randomIntDefault, randomNumber, randomPlusOrMinusOne, randomPrettyColor, randomPrettyHslColor, rc, rectangleCollision, reverse_circle, setWorldWidthAndHeight, spawnEnemy, spawnPlayer, zeroTo255;
 
-  _DEBUG_ = true;
+  _DEBUG_ = false;
 
   ENEMIES_PROPABILITY = 0.05;
 
