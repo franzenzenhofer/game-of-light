@@ -1,5 +1,5 @@
 
-_DEBUG_ = true
+_DEBUG_ = false
 
 #magic numbers
 ENEMIES_PROPABILITY = 0.05
@@ -191,7 +191,7 @@ makePlayer = (x,y,r) ->
 
 spawnPlayer = (w,h) ->
   #PLAYER_START_SIZE ignored
-  makePlayer(Math.floor(w/2), Math.floor(h/2), w*0.005)
+  makePlayer(Math.floor(w/2), Math.floor(h/2), PLAYER_START_SIZE) #w*0.010)
 
 makeBullet = (x,y,r,vx,vy,rgb) ->
   makeBubble(x, y, r, vx, vy, rgb)
@@ -426,6 +426,8 @@ init = (w = document.getElementById('world'), full_screen = FULL_SCREEN) ->
   joystick.on('move', (evt, data) ->
     ##dlog(evt)
     dlog(data)
+    setActiveCommand(data)
+    return true
     if data.force < 1
       removeAllActiveCommand()
       setActiveCommand('slowdown')
@@ -549,28 +551,56 @@ init = (w = document.getElementById('world'), full_screen = FULL_SCREEN) ->
     movePlayer = (active_commands, w, h, p) ->
       for command in active_commands
         do (command) ->
-          if command is 'up'
-            p.vy = p.vy - DEFAULT_USER_ACCELERATION
-            p.vy = limitPlayerVelocity(p.vy)
-          else if command is 'down'
-            p.vy = p.vy + DEFAULT_USER_ACCELERATION
-            p.vy = limitPlayerVelocity(p.vy)
-          else if command is 'left'
-            p.vx = p.vx - DEFAULT_USER_ACCELERATION
-            p.vx = limitPlayerVelocity(p.vx)
-          else if command is 'right'
-            p.vx = p.vx + DEFAULT_USER_ACCELERATION
-            p.vx = limitPlayerVelocity(p.vx)
-          else if command is 'fire'
-            fireBulletBy(p)
-          else if command is 'slowdown'
-            p.vx = limitPlayerVelocity(p.vx * 0.95)
-            p.vy = limitPlayerVelocity(p.vy * 0.95)
-          else if command is 'stop'
-            p.vy = 0
-            p.vx = 0
-          else
+          if typeof command is 'string'
+            if command is 'up'
+              p.vy = p.vy - DEFAULT_USER_ACCELERATION
+              p.vy = limitPlayerVelocity(p.vy)
+            else if command is 'down'
+              p.vy = p.vy + DEFAULT_USER_ACCELERATION
+              p.vy = limitPlayerVelocity(p.vy)
+            else if command is 'left'
+              p.vx = p.vx - DEFAULT_USER_ACCELERATION
+              p.vx = limitPlayerVelocity(p.vx)
+            else if command is 'right'
+              p.vx = p.vx + DEFAULT_USER_ACCELERATION
+              p.vx = limitPlayerVelocity(p.vx)
+            else if command is 'fire'
+              fireBulletBy(p)
+            else if command is 'slowdown'
+              p.vx = limitPlayerVelocity(p.vx * 0.95)
+              p.vy = limitPlayerVelocity(p.vy * 0.95)
+            else if command is 'stop'
+              p.vy = 0
+              p.vx = 0
+            else
             #dlog('unkown command: '+c)
+          else if command?.angle
+            dlog('awesome command')
+            dlog(command)
+            #y_factor = (command.angle.degree-180)%90
+            #x_factor = command.angle.degree-360
+            d = command.angle.degree 
+            y_factor = 0
+            x_factor = 0
+            if d > 0 and d <= 90
+              y_factor = -1 * (d / 90)
+              x_factor = 1 * Math.abs((d - 90)/90)
+            else if d > 90 and d <= 180
+              y_factor = -1 * ((d-90) / 90)
+              x_factor = -1 * Math.abs((d - 90)/90)
+            else if d > 180 and d <= 270
+              y_factor = 1 * ((d-90) / 90)
+              x_factor = -1 * Math.abs((d - 90)/90)
+            else if d > 270
+              y_factor = 1 * ((d-90) / 90)
+              x_factor = 1 * Math.abs((d - 90)/90)
+
+
+            #dlog('x_factor:'+x_factor)
+            dlog('y_factor:'+y_factor)
+            p.vx = limitPlayerVelocity((MAX_USER_SPEED * command.force * 1)*x_factor)# * (command.angle.degree360%350)
+            p.vy = limitPlayerVelocity((MAX_USER_SPEED * command.force * 1)*y_factor)
+
       moveBubbleWithinBounds(w,h,p)
 
 

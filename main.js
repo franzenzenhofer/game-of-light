@@ -2,7 +2,7 @@
 (function() {
   var BULLET_SHOOTER_RATIO, DEFAULT_NEGATIVE_CIRCLE_JOIN_RATE, DEFAULT_USER_ACCELERATION, DRAW_BIGGER_RADIUS_FACTOR, ENEMIES_PROPABILITY, FULL_SCREEN, MAX_ENEMY_RADIUS, MAX_ENEMY_SPEED, MAX_RADIUS, MAX_USER_SPEED, MINIMAL_VIABLE_RADIUS, MIN_ENEMY_RADIUS, MIN_ENEMY_SPEED, NUMBER_OF_ENEMIES, PLAYER_START_SIZE, PROPORTION_MAX_NEW_ENEMY_SIZE, RATIO_PREVAILANCE_WITH_MERGE, SHOOTER_SHOOT_LOSS, _DEBUG_, _NODE_WEBKIT_CONTEXT_, bubbleCollision, c, calcCircleBox, circle, circleCollision, clamp, clampRgb, colorMix, colorMixHsl, colorMixRgbLikeHsv, delay, dlog, drawCircle, drawCircleBox, drawCircleExplosion, event2Command, getA, getADifference, getADifferenceMinusRadius, getRadiusByArea, getRidOfTheDeadAndReturnTheLiving, init, isCircleRadiusViable, limitPlayerVelocity, makeBubble, makeBullet, makeColorString, makeEnemy, makeHslColorString, makePlayer, maxEnemySize, maxEnemyVelocity, moveBubble, moveBubbleWithinBounds, randomColor, randomColorHsl, randomInt, randomIntDefault, randomNumber, randomPlusOrMinusOne, randomPrettyColor, randomPrettyHslColor, rc, rectangleCollision, reverse_circle, setWorldWidthAndHeight, spawnEnemy, spawnPlayer, zeroTo255;
 
-  _DEBUG_ = true;
+  _DEBUG_ = false;
 
   ENEMIES_PROPABILITY = 0.05;
 
@@ -249,7 +249,7 @@
   };
 
   spawnPlayer = function(w, h) {
-    return makePlayer(Math.floor(w / 2), Math.floor(h / 2), w * 0.005);
+    return makePlayer(Math.floor(w / 2), Math.floor(h / 2), PLAYER_START_SIZE);
   };
 
   makeBullet = function(x, y, r, vx, vy, rgb) {
@@ -538,6 +538,8 @@
     joystick.on('move', function(evt, data) {
       var command, fake_event, ref;
       dlog(data);
+      setActiveCommand(data);
+      return true;
       if (data.force < 1) {
         removeAllActiveCommand();
         return setActiveCommand('slowdown');
@@ -661,28 +663,53 @@
       movePlayer = function(active_commands, w, h, p) {
         var command, fn, j, len;
         fn = function(command) {
-          if (command === 'up') {
-            p.vy = p.vy - DEFAULT_USER_ACCELERATION;
-            return p.vy = limitPlayerVelocity(p.vy);
-          } else if (command === 'down') {
-            p.vy = p.vy + DEFAULT_USER_ACCELERATION;
-            return p.vy = limitPlayerVelocity(p.vy);
-          } else if (command === 'left') {
-            p.vx = p.vx - DEFAULT_USER_ACCELERATION;
-            return p.vx = limitPlayerVelocity(p.vx);
-          } else if (command === 'right') {
-            p.vx = p.vx + DEFAULT_USER_ACCELERATION;
-            return p.vx = limitPlayerVelocity(p.vx);
-          } else if (command === 'fire') {
-            return fireBulletBy(p);
-          } else if (command === 'slowdown') {
-            p.vx = limitPlayerVelocity(p.vx * 0.95);
-            return p.vy = limitPlayerVelocity(p.vy * 0.95);
-          } else if (command === 'stop') {
-            p.vy = 0;
-            return p.vx = 0;
-          } else {
+          var d, x_factor, y_factor;
+          if (typeof command === 'string') {
+            if (command === 'up') {
+              p.vy = p.vy - DEFAULT_USER_ACCELERATION;
+              return p.vy = limitPlayerVelocity(p.vy);
+            } else if (command === 'down') {
+              p.vy = p.vy + DEFAULT_USER_ACCELERATION;
+              return p.vy = limitPlayerVelocity(p.vy);
+            } else if (command === 'left') {
+              p.vx = p.vx - DEFAULT_USER_ACCELERATION;
+              return p.vx = limitPlayerVelocity(p.vx);
+            } else if (command === 'right') {
+              p.vx = p.vx + DEFAULT_USER_ACCELERATION;
+              return p.vx = limitPlayerVelocity(p.vx);
+            } else if (command === 'fire') {
+              return fireBulletBy(p);
+            } else if (command === 'slowdown') {
+              p.vx = limitPlayerVelocity(p.vx * 0.95);
+              return p.vy = limitPlayerVelocity(p.vy * 0.95);
+            } else if (command === 'stop') {
+              p.vy = 0;
+              return p.vx = 0;
+            } else {
 
+            }
+          } else if (command != null ? command.angle : void 0) {
+            dlog('awesome command');
+            dlog(command);
+            d = command.angle.degree;
+            y_factor = 0;
+            x_factor = 0;
+            if (d > 0 && d <= 90) {
+              y_factor = -1 * (d / 90);
+              x_factor = 1 * Math.abs((d - 90) / 90);
+            } else if (d > 90 && d <= 180) {
+              y_factor = -1 * ((d - 90) / 90);
+              x_factor = -1 * Math.abs((d - 90) / 90);
+            } else if (d > 180 && d <= 270) {
+              y_factor = 1 * ((d - 90) / 90);
+              x_factor = -1 * Math.abs((d - 90) / 90);
+            } else if (d > 270) {
+              y_factor = 1 * ((d - 90) / 90);
+              x_factor = 1 * Math.abs((d - 90) / 90);
+            }
+            dlog('y_factor:' + y_factor);
+            p.vx = limitPlayerVelocity((MAX_USER_SPEED * command.force * 1) * x_factor);
+            return p.vy = limitPlayerVelocity((MAX_USER_SPEED * command.force * 1) * y_factor);
           }
         };
         for (j = 0, len = active_commands.length; j < len; j++) {
