@@ -12,7 +12,7 @@
 
   MAX_ENEMY_SPEED = 1;
 
-  PLAYER_START_SIZE = 20;
+  PLAYER_START_SIZE = 10;
 
   DEFAULT_USER_ACCELERATION = 0.1;
 
@@ -249,7 +249,12 @@
   };
 
   spawnPlayer = function(w, h) {
-    return makePlayer(Math.floor(w / 2), Math.floor(h / 2), PLAYER_START_SIZE);
+    var player_size;
+    player_size = PLAYER_START_SIZE;
+    if (w * 0.01 > PLAYER_START_SIZE) {
+      player_size = w * 0.01;
+    }
+    return makePlayer(Math.floor(w / 2), Math.floor(h / 2), player_size);
   };
 
   makeBullet = function(x, y, r, vx, vy, rgb) {

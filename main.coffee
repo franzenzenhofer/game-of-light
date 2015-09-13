@@ -8,7 +8,7 @@ NUMBER_OF_ENEMIES = 100
 MIN_ENEMY_SPEED = 0.5
 MAX_ENEMY_SPEED = 1
 
-PLAYER_START_SIZE = 20
+PLAYER_START_SIZE = 10
 
 DEFAULT_USER_ACCELERATION = 0.1
 MAX_USER_SPEED = 4
@@ -191,7 +191,10 @@ makePlayer = (x,y,r) ->
 
 spawnPlayer = (w,h) ->
   #PLAYER_START_SIZE ignored
-  makePlayer(Math.floor(w/2), Math.floor(h/2), PLAYER_START_SIZE) #w*0.010)
+  player_size = PLAYER_START_SIZE
+  if w * 0.01 > PLAYER_START_SIZE
+    player_size = w * 0.01
+  makePlayer(Math.floor(w/2), Math.floor(h/2), player_size) #w*0.010)
 
 makeBullet = (x,y,r,vx,vy,rgb) ->
   makeBubble(x, y, r, vx, vy, rgb)
